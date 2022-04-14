@@ -1,0 +1,38 @@
+{"intents": [
+        {"tag": "menzil",
+         "patterns": ["Full şarjla kaç km gidebilirim", "Tam dolu depo kaç saat götürür", "kalan pilin ömrü ne kadar","şarj yüzde kaç", "ne kadar götürür"],
+         "responses": ["Şu anda kalan şarj: {charge}\nTahmini menzil: {rangeleft}"],
+         "context_set": ""
+        },
+        {"tag": "komut_fan_aç",
+         "patterns": ["fanı aç", "havalandır", "fanı çalıştır", "havayı temizle", "vantilatörü aç"],
+         "responses": ["{turn_on_fan}"],
+         "context_set": ""
+        },
+        {"tag": "komut_fan_kapa",
+         "patterns": ["fanı kapa", "havalandırmayı kapat", "fanı durdur","vantilatörü durdur","vantilatörü kapat"],
+         "responses": ["{turn_off_fan}"],
+         "context_set": ""
+        },
+        {"tag": "komut_radyo_aç[extractable]",
+         "patterns": ["radyo aç", "haberleri aç", "müzik aç","radyoyu açar mısın","frekans","radyoyu açarmısın","müzik açarmısın"],
+         "responses": ["{turn_on_radio=103.6}"],
+         "context_set": ""
+        },
+        {"tag": "komut_radyo_kapa",
+         "patterns": ["radyo kapat", "radyoyu kapat", "kafam şişti","müziği kapat","radyoyu kapatırmısın","radyoyu kapatır mısın"],
+         "responses": ["{turn_off_radio}"],
+         "context_set": ""
+        },
+        {"tag": "ad",
+         "patterns": ["adın ne", "adını söyle", "ismin nedir", "ismini söyle","adın nedir"],
+         "responses": ["Adım {name}."],
+         "context_set": ""
+        },
+        {"tag": "not-detected",
+         "patterns": [],
+         "responses": ["{not-detected}"],
+         "context_set": ""
+        }
+   ]
+}
