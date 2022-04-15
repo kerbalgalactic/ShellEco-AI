@@ -5,6 +5,9 @@ stemmer = LancasterStemmer()
 import numpy
 import tflearn
 import tensorflow
+
+tensorflow.compat.v1.logging.set_verbosity(tensorflow.compat.v1.logging.ERROR)
+
 import random
 import json
 import pickle
@@ -80,12 +83,10 @@ except:
 
 tensorflow.compat.v1.reset_default_graph()
 
-
-
 net = tflearn.input_data(shape=[None, len(training[0])])
 net = tflearn.fully_connected(net, 12)
 net = tflearn.fully_connected(net, 10)
-net = tflearn.fully_connected(net, 8)
+net = tflearn.fully_connected(net, 10)
 net = tflearn.fully_connected(net, len(output[0]), activation="softmax")
 net = tflearn.regression(net)
 
@@ -95,20 +96,20 @@ try:
     model.load("model.tflearn")
 except:
     model = tflearn.DNN(net)
-    model.fit(training, output, n_epoch=400, batch_size=2, show_metric=True)
+    model.fit(training, output, n_epoch=200, batch_size=2, show_metric=True)
     model.save("model.tflearn")
 
 
 def apiac(inp):
     global completion, prefix
     ### Prompt engineering :)
+    ### Or as you may call it, "dark magic"
     prefix_file = open("prefix.txt","r")
     prefix = prefix_file.read()
     prefix_file.close()
-    #prefix = "AI is a voice assistant specifically designed for an electric car. AI uses a special command interface to automate components.\n\nTurn On The Radio/Change Radio Frequency = {turn_on_radio:freq=[extract from text]}\nTurn On Music = {turn_on_music:name=[extract from text]}\nTurn On GPS = {turn_on_gps}\nSet Navigation Route = {set_route=[extract from text]}\n\n"
     response = completion.create(
         prompt=prefix+inp, engine='text-davinci-002', stop=['Human'], temperature=0,
-        top_p=1,presence_penalty = 0, frequency_penalty=0, max_tokens=60)
+        top_p=0,presence_penalty = 0.4, frequency_penalty=0, max_tokens=400)
     answer = response.choices[0].text.strip()
     answer = "\n".join(answer.split("\n"))
     return answer
@@ -135,8 +136,11 @@ statics = {'name': '"AI"',
 
 history = ""
 
+allowed_history_length = 3
+
 completion = openai.Completion()
 
+treshold = .99
 
 while True:
     inp = input(">>> ")
@@ -147,7 +151,7 @@ while True:
     results_index = numpy.argmax(results)
     history += "\nHuman: "+inp
     
-    if results.max() > .99:
+    if results.max() > treshold:
         tag = labels[results_index]
 
         for tg in data["intents"]:
@@ -169,9 +173,16 @@ while True:
         history += "\nAI: "+response
         history = history.strip('\n')
     else:
-        response = en2tr.translate(apiac(tr2en.translate(history)+"\nAI: "))
+        response = apiac(tr2en.translate(history)+"\nAI: ")
+        if len(response) == 0:
+            continue
+        if "{" not in response: response = en2tr.translate(response)
         history += "\nAI: "+response
         print(response)
-    print(results.max())
+    try:
+        "Human"+"Human".join(history.split('Human')[len(history.split('Human'))-allowed_history_length:len(history.split('Human'))])
+    except:
+        pass
+    print("CS:",results.max(),"|||", "Mode: DNN" if results.max() > treshold else "Mode: GPT")
         
 
